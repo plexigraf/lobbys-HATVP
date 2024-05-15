@@ -1,0 +1,68 @@
+{
+    "D\u00e9put\u00e9, s\u00e9nateur, collaborateur du Pr\u00e9sident de l'Assembl\u00e9e nationale ou du Pr\u00e9sident du S\u00e9nat, d\u2019un d\u00e9put\u00e9, d'un s\u00e9nateur ou d'un groupe parlementaire, agents des services des assembl\u00e9es parlementaires":{
+        "prive":22531536.4162618,
+        "syndicat":2328137.7593607814,
+        "public":3519670.87325417,
+        "collectivite":18596.806302686957
+    },
+    "Titulaire d'un emploi \u00e0 la d\u00e9cision du Gouvernement":{
+        "prive":5757382.393004138,
+        "syndicat":239587.05192979757,
+        "public":880519.0327903733,
+        "collectivite":10423.357335733574
+    },
+    "Collaborateur du Pr\u00e9sident de la R\u00e9publique":{
+        "prive":5270055.148922021,
+        "syndicat":424860.29830448603,
+        "public":1547555.0812949934,
+        "collectivite":2297.9462179195125
+    },
+    "Agent d\u2019une collectivit\u00e9 territoriale":{
+        "prive":415771.750139287,
+        "syndicat":37579.72436135919,
+        "public":51902.55225508323,
+        "collectivite":625.2189451922396
+    },
+    "NA":{
+        "prive":1547500.0,
+        "syndicat":92500.0,
+        "public":445000.0,
+        "collectivite":0.0
+    },
+    "Agent d\u2019un centre hospitalier":{
+        "prive":0,
+        "syndicat":0,
+        "public":0,
+        "collectivite":0
+    },
+    "Membre du Gouvernement ou membre de cabinet minist\u00e9riel":{
+        "prive":21567891.461939245,
+        "syndicat":1121462.8313689346,
+        "public":3843985.4469083105,
+        "collectivite":21288.07542959965
+    },
+    "Premier ministre":{
+        "prive":6115626.569591697,
+        "syndicat":238148.48461425715,
+        "public":892735.1441383278,
+        "collectivite":9688.68863474423
+    },
+    "Agent de l\u2019\u00c9tat":{
+        "prive":2311626.212279445,
+        "syndicat":186497.88632515806,
+        "public":280469.73030582134,
+        "collectivite":625.2189451922396
+    },
+    "Direction autorit\u00e9 administrative ou publique ind\u00e9pendante":{
+        "prive":3171557.0185307576,
+        "syndicat":47587.8881658675,
+        "public":392572.57946683426,
+        "collectivite":0.0
+    },
+    "\u00c9lu ou membre de cabinet d'une collectivit\u00e9 territoriale":{
+        "prive":600312.4400864191,
+        "syndicat":61619.37519511204,
+        "public":47866.105169340466,
+        "collectivite":1065.9536541889483
+    }
+}

@@ -1,0 +1,382 @@
+
+import numpy as np
+
+d_all={
+    'secteurs_par_action_fale':
+{
+  "Construction, logement, aménagement du territoire" : 180228605.33328417,
+  "Aide et protection sociale" : 84673463.40782993,
+  "Enseignement et recherche" : 108741391.64046226,
+  "Droits de l'homme et libertés" : 72763224.17012294,
+  "Industries de télécommunications et du numérique" : 109635584.37123409,
+  "Santé et bien-être" : 267043455.3743859,
+  "Banques, assurances, finance" : 118160818.4081643,
+  "Economie et finances publiques" : 438017785.0804431,
+  "Energie" : 64952744.63451303,
+  "Environnement et développement durable" : 269719034.7180499,
+  "Justice et sécurité" : 68138781.51934862,
+  "Culture,loisirs, tourisme, Médias" : 158116356.73899016,
+  "Transport et logistique" : 132950030.49062166,
+  "Agriculture et alimentation" : 304693615.3102842,
+  "Gouvernance et institutions publiques" : 59376311.13742594
+}
+
+,
+'secteur_par_action_true':
+{
+  "Construction, logement, aménagement du territoire" : 164552707.91566715,
+  "Aide et protection sociale" : 77569965.14160226,
+  "Enseignement et recherche" : 100654455.86007208,
+  "Droits de l'homme et libertés" : 66343607.310618125,
+  "Industries de télécommunications et du numérique" : 105439900.20737427,
+  "Santé et bien-être" : 243280875.1875006,
+  "Banques, assurances, finance" : 113568403.40482599,
+  "Economie et finances publiques" : 388825708.0220727,
+  "Energie" : 61818803.73297841,
+  "Environnement et développement durable" : 249887284.74498978,
+  "Justice et sécurité" : 60122568.42682968,
+  "Culture,loisirs, tourisme, Médias" : 150460939.6759133,
+  "Transport et logistique" : 129598626.99287629,
+  "Agriculture et alimentation" : 275276091.24496686,
+  "Gouvernance et institutions publiques" : 52624188.89687381
+}
+,
+#     'secteurs_by_firme_low_true':
+#           {
+#   "Economie et finances publiques" : 363185755.9722096,
+#   "Enseignement et recherche" : 146403181.3770021,
+#   "Environnement et développement durable" : 160508634.50638363,
+#   "Industries de télécommunications et du numérique" : 121480972.28752144,
+#   "Gouvernance et institutions publiques" : 90646574.50898641,
+#   "Droits de l'homme et libertés" : 36755118.25360444,
+#   "Culture,loisirs, tourisme, Médias" : 124767731.84529147,
+#   "Aide et protection sociale" : 99085101.85810784,
+#   "Construction, logement, aménagement du territoire" : 95903561.19385411,
+#   "Justice et sécurité" : 42996324.72811979,
+#   "Santé et bien-être" : 132707920.44569893,
+#   "Energie" : 116088303.40811338,
+#   "Transport et logistique" : 90531716.90921438,
+#   "Banques, assurances, finance" : 73254952.89019947,
+#   "Agriculture et alimentation" : 159941862.9656935
+# },
+'secteurs_by_action_low_true':
+{
+  "Construction, logement, aménagement du territoire" : 137631961.91645843,
+  "Aide et protection sociale" : 63880331.157237254,
+  "Enseignement et recherche" : 81679299.03192368,
+  "Droits de l'homme et libertés" : 57088258.415996365,
+  "Industries de télécommunications et du numérique" : 86592574.08563562,
+  "Santé et bien-être" : 201769345.16064224,
+  "Banques, assurances, finance" : 97731152.6857644,
+  "Economie et finances publiques" : 322807581.97214556,
+  "Energie" : 47744473.906668745,
+  "Environnement et développement durable" : 209141752.67492458,
+  "Justice et sécurité" : 50462011.39895243,
+  "Culture,loisirs, tourisme, Médias" : 123429485.12005416,
+  "Transport et logistique" : 106867997.1251546,
+  "Agriculture et alimentation" : 226001972.7666654,
+  "Gouvernance et institutions publiques" : 41819768.47903031
+}
+,
+#     'secteurs_by_firme_false':
+#     {
+#   "Economie et finances publiques" : 46002369.13356918,
+#   "Enseignement et recherche" : 21725544.838223595,
+#   "Environnement et développement durable" : 27448595.9406191,
+#   "Industries de télécommunications et du numérique" : 11081303.711623581,
+#   "Gouvernance et institutions publiques" : 15634486.862166308,
+#   "Droits de l'homme et libertés" : 6382007.886805983,
+#   "Culture,loisirs, tourisme, Médias" : 15877455.607540632,
+#   "Aide et protection sociale" : 15833951.56849612,
+#   "Construction, logement, aménagement du territoire" : 19629823.34468519,
+#   "Justice et sécurité" : 7594769.8860999765,
+#   "Santé et bien-être" : 23003653.126921363,
+#   "Energie" : 15955095.17571654,
+#   "Transport et logistique" : 12754909.42317702,
+#   "Banques, assurances, finance" : 7763239.010874005,
+#   "Agriculture et alimentation" : 55018394.48348147
+# },
+'secteur_by_action_false':{
+  "Construction, logement, aménagement du territoire" : 180228605.33328417,
+  "Aide et protection sociale" : 84673463.40782993,
+  "Enseignement et recherche" : 108741391.64046226,
+  "Droits de l'homme et libertés" : 72763224.17012294,
+  "Industries de télécommunications et du numérique" : 109635584.37123409,
+  "Santé et bien-être" : 267043455.3743859,
+  "Banques, assurances, finance" : 118160818.4081643,
+  "Economie et finances publiques" : 438017785.0804431,
+  "Energie" : 64952744.63451303,
+  "Environnement et développement durable" : 269719034.7180499,
+  "Justice et sécurité" : 68138781.51934862,
+  "Culture,loisirs, tourisme, Médias" : 158116356.73899016,
+  "Transport et logistique" : 132950030.49062166,
+  "Agriculture et alimentation" : 304693615.3102842,
+  "Gouvernance et institutions publiques" : 59376311.13742594
+}
+,
+# 'secteurs_by_firme_true':
+# {
+#   "Economie et finances publiques" : 437366469.7552258,
+#   "Enseignement et recherche" : 179415897.01181632,
+#   "Environnement et développement durable" : 193308002.7751061,
+#   "Industries de télécommunications et du numérique" : 145964705.26400483,
+#   "Gouvernance et institutions publiques" : 110257851.06620637,
+#   "Droits de l'homme et libertés" : 44516515.53817847,
+#   "Culture,loisirs, tourisme, Médias" : 150399976.04187304,
+#   "Aide et protection sociale" : 118417611.78481716,
+#   "Construction, logement, aménagement du territoire" : 114070428.66251744,
+#   "Justice et sécurité" : 52089749.099061236,
+#   "Santé et bien-être" : 163887425.8441452,
+#   "Energie" : 139221923.8275013,
+#   "Transport et logistique" : 108572940.49443343,
+#   "Banques, assurances, finance" : 84719991.411193,
+#   "Agriculture et alimentation" : 196761535.8539203
+# },
+'secteur_by_action_true':{
+  "Construction, logement, aménagement du territoire" : 164552707.91566715,
+  "Aide et protection sociale" : 77569965.14160226,
+  "Enseignement et recherche" : 100654455.86007208,
+  "Droits de l'homme et libertés" : 66343607.310618125,
+  "Industries de télécommunications et du numérique" : 105439900.20737427,
+  "Santé et bien-être" : 243280875.1875006,
+  "Banques, assurances, finance" : 113568403.40482599,
+  "Economie et finances publiques" : 388825708.0220727,
+  "Energie" : 61818803.73297841,
+  "Environnement et développement durable" : 249887284.74498978,
+  "Justice et sécurité" : 60122568.42682968,
+  "Culture,loisirs, tourisme, Médias" : 150460939.6759133,
+  "Transport et logistique" : 129598626.99287629,
+  "Agriculture et alimentation" : 275276091.24496686,
+  "Gouvernance et institutions publiques" : 52624188.89687381
+}
+
+}
+
+d={'2022_firme':
+   {
+  "Economie et finances publiques" : 85911038.88595702,
+  "Enseignement et recherche" : 38282233.87687499,
+  "Environnement et développement durable" : 39930156.70288776,
+  "Industries de télécommunications et du numérique" : 30718128.175039213,
+  "Gouvernance et institutions publiques" : 24291997.186873097,
+  "Droits de l'homme et libertés" : 9646484.893598517,
+  "Culture,loisirs, tourisme, Médias" : 31718028.523894828,
+  "Aide et protection sociale" : 23200679.60011453,
+  "Construction, logement, aménagement du territoire" : 24170891.25770097,
+  "Justice et sécurité" : 10299236.792754194,
+  "Santé et bien-être" : 35096509.30008105,
+  "Energie" : 30710514.866516702,
+  "Transport et logistique" : 25488780.514382504,
+  "Banques, assurances, finance" : 17694149.500756186,
+  "Agriculture et alimentation" : 42604586.232568696
+}
+,
+'2022_act':
+{
+  "Construction, logement, aménagement du territoire" : 34756662.611916535,
+  "Aide et protection sociale" : 13594927.864384504,
+  "Enseignement et recherche" : 20087359.694233675,
+  "Droits de l'homme et libertés" : 13351516.586588277,
+  "Industries de télécommunications et du numérique" : 22767397.36390026,
+  "Santé et bien-être" : 52415701.29539064,
+  "Banques, assurances, finance" : 21223735.004897546,
+  "Economie et finances publiques" : 75475791.82048628,
+  "Energie" : 13586347.124692976,
+  "Environnement et développement durable" : 62417989.74490934,
+  "Justice et sécurité" : 9648219.585386487,
+  "Culture,loisirs, tourisme, Médias" : 30592421.346579876,
+  "Transport et logistique" : 32564800.6530169,
+  "Agriculture et alimentation" : 56388946.14016412,
+  "Gouvernance et institutions publiques" : 10891599.473452542
+},
+'2021_sect':
+{
+  "Economie et finances publiques" : 72328355.10827185,
+  "Enseignement et recherche" : 30313787.192831893,
+  "Environnement et développement durable" : 36570299.48374823,
+  "Industries de télécommunications et du numérique" : 24801985.977352254,
+  "Gouvernance et institutions publiques" : 19082506.19636348,
+  "Droits de l'homme et libertés" : 7940783.579716828,
+  "Culture,loisirs, tourisme, Médias" : 26592176.449138653,
+  "Aide et protection sociale" : 19894974.037068877,
+  "Construction, logement, aménagement du territoire" : 18998766.688330386,
+  "Justice et sécurité" : 7972196.7537919,
+  "Santé et bien-être" : 26974461.00217306,
+  "Energie" : 21151840.150783025,
+  "Transport et logistique" : 16572343.230349898,
+  "Banques, assurances, finance" : 14176102.205703244,
+  "Agriculture et alimentation" : 35730937.98437642
+},
+'2021_act':
+{
+  "Construction, logement, aménagement du territoire" : 28724464.87613838,
+  "Aide et protection sociale" : 11275910.744949952,
+  "Enseignement et recherche" : 15030858.920272404,
+  "Droits de l'homme et libertés" : 12563807.25433238,
+  "Industries de télécommunications et du numérique" : 18736884.303646635,
+  "Santé et bien-être" : 42033945.49946425,
+  "Banques, assurances, finance" : 17853727.373504244,
+  "Economie et finances publiques" : 62143657.68817747,
+  "Energie" : 8716489.734040095,
+  "Environnement et développement durable" : 41731934.11499066,
+  "Justice et sécurité" : 8096639.535886374,
+  "Culture,loisirs, tourisme, Médias" : 29130908.200647023,
+  "Transport et logistique" : 19492518.961174183,
+  "Agriculture et alimentation" : 54743662.703749254,
+  "Gouvernance et institutions publiques" : 8826106.129027145
+}
+,
+'2020_firme':
+{
+  "Economie et finances publiques" : 68159393.80861427,
+  "Enseignement et recherche" : 27311830.2581543,
+  "Environnement et développement durable" : 29083167.891179528,
+  "Industries de télécommunications et du numérique" : 22777447.825890873,
+  "Gouvernance et institutions publiques" : 16678455.063879648,
+  "Droits de l'homme et libertés" : 6664301.435004606,
+  "Culture,loisirs, tourisme, Médias" : 23817154.939489108,
+  "Aide et protection sociale" : 17791020.663942616,
+  "Construction, logement, aménagement du territoire" : 17913475.669436533,
+  "Justice et sécurité" : 7404742.406176805,
+  "Santé et bien-être" : 23404037.296812493,
+  "Energie" : 20548138.007846482,
+  "Transport et logistique" : 15330508.778747719,
+  "Banques, assurances, finance" : 12586727.985456713,
+  "Agriculture et alimentation" : 27578639.429368127
+}
+,
+'2020_act':
+{
+  "Construction, logement, aménagement du territoire" : 24764052.003819346,
+  "Aide et protection sociale" : 11147894.797588233,
+  "Enseignement et recherche" : 13751123.309119683,
+  "Droits de l'homme et libertés" : 10104523.55700989,
+  "Industries de télécommunications et du numérique" : 15333314.271065611,
+  "Santé et bien-être" : 36753409.463839196,
+  "Banques, assurances, finance" : 17461781.841018766,
+  "Economie et finances publiques" : 64689108.70110738,
+  "Energie" : 7887099.506347525,
+  "Environnement et développement durable" : 35259093.27862617,
+  "Justice et sécurité" : 9758876.213959917,
+  "Culture,loisirs, tourisme, Médias" : 25652429.134739816,
+  "Transport et logistique" : 18107727.010922924,
+  "Agriculture et alimentation" : 38349942.47607651,
+  "Gouvernance et institutions publiques" : 8028665.894758992
+}
+,
+'2019_firme':
+{
+  "Economie et finances publiques" : 60659319.497861974,
+  "Enseignement et recherche" : 24431163.789240755,
+  "Environnement et développement durable" : 25424028.74293259,
+  "Industries de télécommunications et du numérique" : 19692042.93834628,
+  "Gouvernance et institutions publiques" : 15117064.701542001,
+  "Droits de l'homme et libertés" : 5339585.831424542,
+  "Culture,loisirs, tourisme, Médias" : 20335382.05048653,
+  "Aide et protection sociale" : 16552162.015512241,
+  "Construction, logement, aménagement du territoire" : 16002519.178147323,
+  "Justice et sécurité" : 7206042.668617328,
+  "Santé et bien-être" : 21018109.391229924,
+  "Energie" : 17943009.947482057,
+  "Transport et logistique" : 14426965.240752608,
+  "Banques, assurances, finance" : 12805217.316436838,
+  "Agriculture et alimentation" : 26373571.959986936
+}
+,
+'2019_act':
+{
+  "Construction, logement, aménagement du territoire" : 21929100.359520297,
+  "Aide et protection sociale" : 11284982.614058357,
+  "Enseignement et recherche" : 13793524.109162854,
+  "Droits de l'homme et libertés" : 8257741.426803095,
+  "Industries de télécommunications et du numérique" : 13219818.751335133,
+  "Santé et bien-être" : 31484653.31054066,
+  "Banques, assurances, finance" : 16356875.440805903,
+  "Economie et finances publiques" : 56582752.308217205,
+  "Energie" : 7529669.1060119625,
+  "Environnement et développement durable" : 34664091.89204388,
+  "Justice et sécurité" : 8813313.96337308,
+  "Culture,loisirs, tourisme, Médias" : 19610438.861389138,
+  "Transport et logistique" : 16770379.40009878,
+  "Agriculture et alimentation" : 35971146.322019815,
+  "Gouvernance et institutions publiques" : 7057697.404619508
+}
+,
+'2018_firme':
+{
+  "Economie et finances publiques" : 60234572.382263824,
+  "Enseignement et recherche" : 23859807.58056137,
+  "Environnement et développement durable" : 23860259.062708724,
+  "Industries de télécommunications et du numérique" : 18961132.880925443,
+  "Gouvernance et institutions publiques" : 13430123.952501865,
+  "Droits de l'homme et libertés" : 5162778.014140182,
+  "Culture,loisirs, tourisme, Médias" : 19580855.955375258,
+  "Aide et protection sociale" : 17028061.739343524,
+  "Construction, logement, aménagement du territoire" : 15538995.475009937,
+  "Justice et sécurité" : 7617223.013337324,
+  "Santé et bien-être" : 20653240.91337476,
+  "Energie" : 17021103.025000386,
+  "Transport et logistique" : 13965749.803189345,
+  "Banques, assurances, finance" : 12628704.163121713,
+  "Agriculture et alimentation" : 25260617.479146317
+}
+,
+'2018_act':
+{
+  "Construction, logement, aménagement du territoire" : 23150650.26715408,
+  "Aide et protection sociale" : 11368747.404082473,
+  "Enseignement et recherche" : 17241425.577328257,
+  "Droits de l'homme et libertés" : 8487010.420381552,
+  "Industries de télécommunications et du numérique" : 12812986.194157215,
+  "Santé et bien-être" : 28171565.79892736,
+  "Banques, assurances, finance" : 17528863.183213905,
+  "Economie et finances publiques" : 54717300.61529745,
+  "Energie" : 6855951.800140455,
+  "Environnement et développement durable" : 28310763.198457032,
+  "Justice et sécurité" : 9982835.258280745,
+  "Culture,loisirs, tourisme, Médias" : 18187170.27608607,
+  "Transport et logistique" : 15790236.337671546,
+  "Agriculture et alimentation" : 36115200.72761065,
+  "Gouvernance et institutions publiques" : 6702205.881211397
+}
+}
+
+noAgri=False
+
+for k in d:
+    if noAgri:
+        del d[k]["Agriculture et alimentation"]
+    d[k]=dict(sorted(d[k].items()))
+
+
+# u=list(d['secteur_by_action_true'].values())
+# v=list(d['secteur_by_action_false'].values())
+# print(sum(u),sum(v),u[0],v[0],np.corrcoef(u,v))
+
+import matplotlib.pyplot as plt
+
+
+# plt.bar(list(u.keys()),[u[k] for k in u])
+# plt.show()
+
+
+# plt.bar(list(v.keys()),[u[k] for k in v])
+# plt.show()
+
+
+
+# Votre dictionnaire
+data = {
+    'a': {'Construction, logement, aménagement du territoire': 180228605.33328518, 'Aide et protection sociale': 84673463.40783007, 'Enseignement et recherche': 108741391.64046249, "Droits de l'homme et libertés": 72763224.17012288, 'Industries de télécommunications et du numérique': 109635584.37123418, 'Santé et bien-être': 267043455.37438488, 'Banques, assurances, finance': 118160818.40816624, 'Economie et finances publiques': 438017785.08044314, 'Energie': 64952744.634512946, 'Environnement et développement durable': 269719034.7180504, 'Justice et sécurité': 68138781.51934858, 'Culture,loisirs, tourisme, Médias': 158116356.73899058, 'Transport et logistique': 132950030.49062133, 'Agriculture et alimentation': 304693615.31028485, 'Gouvernance et institutions publiques': 59376311.137426056, 'NA': 0},
+    'x': {'Construction, logement, aménagement du territoire': 164552707.9156671, 'Aide et protection sociale': 77569965.14160228, 'Enseignement et recherche': 100654455.86007206, "Droits de l'homme et libertés": 66343607.310618214, 'Industries de télécommunications et du numérique': 105439900.20737427, 'Santé et bien-être': 243280875.18749994, 'Banques, assurances, finance': 113568403.40482645, 'Economie et finances publiques': 388825708.02207667, 'Energie': 61818803.7329783, 'Environnement et développement durable': 249887284.74499032, 'Justice et sécurité': 60122568.42682959, 'Culture,loisirs, tourisme, Médias': 150460939.67591363, 'Transport et logistique': 129598626.99287602, 'Agriculture et alimentation': 275276091.2449667, 'Gouvernance et institutions publiques': 52624188.89687383, 'NA': 0},
+    't': {'Construction, logement, aménagement du territoire': 164552707.9156671, 'Aide et protection sociale': 77569965.14160228, 'Enseignement et recherche': 100654455.86007206, "Droits de l'homme et libertés": 66343607.310618214, 'Industries de télécommunications et du numérique': 105439900.20737427, 'Santé et bien-être': 243280875.18749994, 'Banques, assurances, finance': 113568403.40482645, 'Economie et finances publiques': 388825708.02207667, 'Energie': 61818803.7329783, 'Environnement et développement durable': 249887284.74499032, 'Justice et sécurité': 60122568.42682959, 'Culture,loisirs, tourisme, Médias': 150460939.67591363, 'Transport et logistique': 129598626.99287602, 'Agriculture et alimentation': 275276091.2449667, 'Gouvernance et institutions publiques': 52624188.89687383, 'NA': 0}
+}
+
+# Créer un tableau numpy à partir des données
+array = np.array([[v for v in l.values()] for l in d.values()])
+print(array)
+# Calculer la matrice de corrélation
+correlation_matrix = np.corrcoef(array)
+
+print("Matrice de corrélation:")
+print(correlation_matrix)

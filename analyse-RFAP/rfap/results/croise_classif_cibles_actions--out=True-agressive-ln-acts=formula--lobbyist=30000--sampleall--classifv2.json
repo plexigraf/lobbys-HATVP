@@ -1,0 +1,56 @@
+{
+    "Titulaire d'un emploi \u00e0 la d\u00e9cision du Gouvernement":{
+        "prive":158180992.9748032,
+        "syndicat":13800959.33577699,
+        "public":16039345.535515789,
+        "collectivite":633542.7376154198
+    },
+    "Premier ministre":{
+        "prive":152485100.7220167,
+        "syndicat":7371744.636199132,
+        "public":20215565.746058837,
+        "collectivite":212140.0182077284
+    },
+    "Collaborateur du Pr\u00e9sident de la R\u00e9publique":{
+        "prive":118092447.87227657,
+        "syndicat":5679293.037796655,
+        "public":17305330.77540109,
+        "collectivite":123376.05444675164
+    },
+    "D\u00e9put\u00e9, s\u00e9nateur, collaborateur, agents des services des assembl\u00e9es":{
+        "prive":615117514.8281018,
+        "syndicat":52265976.63154446,
+        "public":73011960.98715495,
+        "collectivite":1067871.402600578
+    },
+    "NA":{
+        "prive":86532987.41101669,
+        "syndicat":4772894.608695055,
+        "public":7325629.396434028,
+        "collectivite":1203931.383854259
+    },
+    "Membre du Gouvernement ou membre de cabinet minist\u00e9riel":{
+        "prive":633072614.8572258,
+        "syndicat":36445844.90345839,
+        "public":78197995.1680465,
+        "collectivite":1265572.439639775
+    },
+    "Agent de l\u2019\u00c9tat, d\u2019un centre hospitalier, ou d\u2019une collectivit\u00e9 territoriale":{
+        "prive":54057005.64458068,
+        "syndicat":5678377.011230632,
+        "public":5078858.7760758195,
+        "collectivite":195613.98339867342
+    },
+    "Direction autorit\u00e9 administrative ou publique ind\u00e9pendante":{
+        "prive":63773776.876394816,
+        "syndicat":1942412.3367418384,
+        "public":6843181.740359089,
+        "collectivite":22490.805939426453
+    },
+    "\u00c9lu ou membre de cabinet d'une collectivit\u00e9 territoriale":{
+        "prive":25656342.58870464,
+        "syndicat":1850569.4357524053,
+        "public":3194025.695045247,
+        "collectivite":229896.37993565766
+    }
+}

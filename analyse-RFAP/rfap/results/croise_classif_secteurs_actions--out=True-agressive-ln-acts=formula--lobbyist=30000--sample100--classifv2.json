@@ -1,0 +1,98 @@
+{
+    "Construction, logement, am\u00e9nagement du territoire":{
+        "prive":4014228.856784406,
+        "syndicat":567170.1818255271,
+        "public":808517.8747307195,
+        "collectivite":2307.284596987913
+    },
+    "Aide et protection sociale":{
+        "prive":1826229.9417467027,
+        "syndicat":79186.24954716575,
+        "public":79877.03249857036,
+        "collectivite":0.0
+    },
+    "Enseignement et recherche":{
+        "prive":3189574.2264860426,
+        "syndicat":23667.654271469604,
+        "public":426072.118463047,
+        "collectivite":0.0
+    },
+    "Droits de l'homme et libert\u00e9s":{
+        "prive":2091161.319438236,
+        "syndicat":46198.08190729093,
+        "public":852387.5023867729,
+        "collectivite":0.0
+    },
+    "Industries de t\u00e9l\u00e9communications et du num\u00e9rique":{
+        "prive":9385034.51366992,
+        "syndicat":42070.60701467541,
+        "public":90557.90491047206,
+        "collectivite":0.0
+    },
+    "Sant\u00e9 et bien-\u00eatre":{
+        "prive":8672939.70620477,
+        "syndicat":1004018.4298826922,
+        "public":847703.1204302658,
+        "collectivite":37526.76982187307
+    },
+    "Banques, assurances, finance":{
+        "prive":4425801.604613367,
+        "syndicat":5772.329650092081,
+        "public":484314.79724105203,
+        "collectivite":0.0
+    },
+    "Economie et finances publiques":{
+        "prive":11683042.330374086,
+        "syndicat":899499.1668352055,
+        "public":2514232.634498959,
+        "collectivite":21110.835540317537
+    },
+    "Energie":{
+        "prive":1098673.0038313146,
+        "syndicat":34528.9204858975,
+        "public":996705.3909649989,
+        "collectivite":0.0
+    },
+    "Environnement et d\u00e9veloppement durable":{
+        "prive":4714649.27350885,
+        "syndicat":166999.17814047425,
+        "public":1822280.8965989281,
+        "collectivite":0.0
+    },
+    "Justice et s\u00e9curit\u00e9":{
+        "prive":736312.0581095286,
+        "syndicat":4688.731036794904,
+        "public":206435.08338497728,
+        "collectivite":0.0
+    },
+    "Culture,loisirs, tourisme, M\u00e9dias":{
+        "prive":7659453.208682887,
+        "syndicat":569905.5769041507,
+        "public":1406087.8911202683,
+        "collectivite":0.0
+    },
+    "Transport et logistique":{
+        "prive":3414740.1362324245,
+        "syndicat":4783.936447838803,
+        "public":168410.7658862599,
+        "collectivite":0.0
+    },
+    "Agriculture et alimentation":{
+        "prive":3756625.5273745665,
+        "syndicat":1212061.6714059813,
+        "public":535637.603074061,
+        "collectivite":0.0
+    },
+    "Gouvernance et institutions publiques":{
+        "prive":1073293.703697843,
+        "syndicat":24930.584270498064,
+        "public":218055.92939390047,
+        "collectivite":3666.375506078822
+    },
+    "NA":{
+        "prive":1547500.0,
+        "syndicat":92500.0,
+        "public":445000.0,
+        "collectivite":0.0
+    }
+}

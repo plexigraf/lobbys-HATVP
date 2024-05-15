@@ -1,0 +1,25 @@
+{
+    "STAN": {
+        "explication": "entreprise de transport public",
+        "public": 100
+    },
+    "ERAMET SANDOUVILLE": {
+        "explication": "entreprise privée",
+        "prive": 100
+    },
+    "COMITE NATIONAL DU PINEAU": {
+        "explication": "comité interprofessionnel, mélange d'association et de syndicat",
+        "prive": 50,
+        "syndicat": 50
+    },
+    "Influences & Réputation": {
+        "explication": "",
+        "public": 70,
+        "privé": 30
+    }
+}
+
+            #####
+
+            initial msg:
+            [{'name': 'STAN'}, {'name': 'ERAMET SANDOUVILLE'}, {'name': 'COMITE NATIONAL DU PINEAU'}, {'name': 'Influences & Réputation'}]
