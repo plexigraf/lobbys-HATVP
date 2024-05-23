@@ -1,12 +1,12 @@
 
 #PARAMETRES (en majuscule)
-CORRECT_OUTLIERS=False#remplacer les valeurs aberrantes
+CORRECT_OUTLIERS=True#remplacer les valeurs aberrantes
 FOURCHETTE='average' #'low', 'average' ou 'high', pour choisir dans la fourchette du budget pour chaque firme
 out_str=str(CORRECT_OUTLIERS)
 if CORRECT_OUTLIERS:#pour corriger les budgets aberrants des assos de lobbying
-    AGRESSIVE="agressive" #détermination des seuils déclarant une valeur comme problématique
+    STRICT="strict" #détermination des seuils déclarant une valeur comme problématique
     DEFORM="sqrt"# #fonction de déformation du budget pour détecter les outliers, possibilités: "id"; "ln", "sqrt", ...
-    out_str+='-'+AGRESSIVE+'-'+DEFORM
+    out_str+='-'+STRICT+'-'+DEFORM
 SAMPLE="all" #n premieres entrees uniquement (pour dev), ou "all"
 sampleStr="-sample"+str(SAMPLE) if SAMPLE else ""
 UNIFORM_RESS_ACTIONS=True#toutes les actions ont les memes ressources
@@ -15,10 +15,10 @@ if UNIFORM_RESS_ACTIONS:
     COST_LOBBYIST=0
     str_wgt_actions="unif-"
 else:
-    UNIFORM_WEIGHT=False#chaque action a la même ressource au sein d'un exercice
-    COST_LOBBYIST=30000#cout annuel estimé d'un lobbyiste
+    UNIFORM_WEIGHT=True#chaque action a la même ressource au sein d'un exercice
+    COST_LOBBYIST=0000#cout annuel estimé d'un lobbyiste
     str_wgt_actions="by-ex-" if UNIFORM_WEIGHT else "formula-"
-strLobbyist='' if UNIFORM_RESS_ACTIONS else '-lobbyist='+str(COST_LOBBYIST)
+strLobbyist='' if (UNIFORM_RESS_ACTIONS or COST_LOBBYIST==0 )else '-lobbyist='+str(COST_LOBBYIST)
 YEARS=[]# include 2017? 2023? - exercices se terminant une année donnée (2016 ou plus)
 yrs_str='' if len(YEARS)==0 else str(YEARS[0]) if len(YEARS)==1 else str(YEARS[0])+'-'+str(YEARS[-1])
 IMPUTER_DOMAINE=True#quand pas de domaine renseigné sur une action, on prend les secteurs de la firme (s'il y en a...)
@@ -67,22 +67,6 @@ def printjs_debug(s):
         print(json.dumps(s, indent=4, sort_keys=False, ensure_ascii=False))
 
 
-# def gini_coefficient(data):
-#     # Convert data to numpy array
-#     data = np.array(data)
-
-#     # Sort the data
-#     sorted_data = np.sort(data)
-
-#     # Calculate cumulative area under the Lorenz curve
-#     cumulative_areas = np.cumsum(sorted_data) / np.sum(sorted_data)
-
-#     # Calculate Gini coefficient
-#     gini_coeff = 1 - 2 * np.trapz(cumulative_areas) / len(data)
-
-#     return gini_coeff
-
-
 today = str(date.today())
 print( today)
 
@@ -121,15 +105,15 @@ other_names={}
 ####### secteurs par firmes
 DOMAINE={
     'Construction, logement, aménagement du territoire':['Occupation des sols','Patrimoine', 'Développement des territoires', 'Bâtiments et travaux publics','Construction, logement, aménagement du territoire','Logement','Construction'],
-    "Aide et protection sociale":[ 'Assurance chômage',  'Handicap','Droit du travail','Dialogue social','Famille','Emploi, solidarité'],
-    "Enseignement et recherche": [ 'Recherche et innovation','Education','Education, enseignement, formation',
+    "Emploi et protection sociale":[ 'Assurance chômage',  'Handicap','Droit du travail','Dialogue social','Famille','Emploi, solidarité'],
+    "Enseignement et recherche": [ 'Recherche et innovation','Education', 'Education, enseignement, formation',
         "Enseignement supérieur, recherche, innovation",
         "Éducation, enseignement, formation",
         "Enseignement supérieur",
         "Formation professionnelle",
         "Statistiques"
     ],
-    "Droits de l'homme et libertés": [  'Aide au développement','Humanitaire','Principe de précaution','Egalité femmes/hommes','Bien-être animal','Egalité des chances', 'Asile', 'Immigration','Discriminations','Questions migratoires','Société',
+    "Droits de l'homme et libertés": [  'Aide au développement','Humanitaire','Principe de précaution','Egalité femmes/hommes','Bien-être animal','Egalité des chances', 'Asile', 'Immigration','Discriminations','Questions migratoires',
         "Droits et libertés fondamentales",
         "Liberté d’expression et d’information",
         "Droits des victimes",
@@ -137,19 +121,19 @@ DOMAINE={
     ],
     "Industries de télécommunications et du numérique": [
         "Accès à l’Internet",
-        "Accès aux moyens de télécommunications", 'Marché du numérique', 'Protection des données', 'E-commerce',
+        "Accès aux moyens de télécommunications",  'Protection des données', 'E-commerce',
         "Numérique",
         "Télécommunications",
         "Infrastructures de télécommunications",
         "Marché du numérique",
         "E-commerce"
     ],
-    "Santé et pharmaceutique": [ 'Médicaments', 'Remboursements', 'Soins et maladies', 'Système de santé et médico-social','Prévention',
+    "Santé et pharmaceutique": [ 'Médicaments', 'Remboursements', 'Soins et maladies', 'Prévention',
         "Santé",
         "Système de santé et médico-social",
         "Soins et maladies"
     ],
-    "Banques, assurances, finance":[ 'Banques, assurances, secteur financier', 'Protection des marques','Assurances', 'Finances', 'Banques','Banques, assurances, secteur financier et extra financier',
+    "Banques, assurances, finance":[ 'Banques, assurances, secteur financier', 'Protection des marques','Banques, assurances, secteur financier et extra financier',
         "Finances",
         "Banques",
         "Assurances",
@@ -170,7 +154,7 @@ DOMAINE={
     "Concurrence et régulation":['Secret des affaires / Secret professionnel',
         "Aides aux entreprises",'Brevet',  'Droit de la concurrence','Marchés réglementés','PME/TPE', 'Normes de production',
         "Professions réglementées",'Entreprises et professions libérales','Concurrence, consommation','Gouvernance d’entreprise','Commerce extérieur'],
-    "Economie et finances publiques": [  'Taxes',  'Politique industrielle', 'Fonction publique','Retraites',
+    "Economie et finances publiques": [ 'Société', 'Taxes',  'Politique industrielle', 'Fonction publique','Retraites',
         "Partenariats public/privé",
         "Finances publiques",
         "Economie",
@@ -192,7 +176,7 @@ DOMAINE={
         "Dépollution",
         "Forêt"
     ],
-    "Justice et sécurité": [ 'Institutions judiciaires', 'Défense', 'Institutions pénitentiaires',
+    "Justice et sécurité": [  'Défense', 'Institutions pénitentiaires',
         "Justice",
         "Institutions judiciaires",
         "Justice civile",
@@ -215,7 +199,7 @@ DOMAINE={
         "Livre"
     ],
     "Transport et logistique": [
-    "Industrie aérospatiale", 'Services postaux', 'Infrastructures','Industrie aéronautique','Aéronautique, aérospatiale',
+    "Industrie aérospatiale", 'Infrastructures','Industrie aéronautique','Aéronautique, aérospatiale',
         "Transports, logistique",
         "Transport de voyageurs",
         "Transport de fret",
@@ -228,7 +212,7 @@ DOMAINE={
         "Industrie agroalimentaire",
         "Pêche"
     ],
-    'NA':['NA']
+    'Non renseigné':['Non renseigné']
 }
 
 results['sous-secteurs']=DOMAINE
@@ -238,7 +222,7 @@ SECTEUR={}
 CIBLES=["Titulaire d'un emploi à la décision du Gouvernement",'Premier ministre',
         "Collaborateur du Président de la République",
         "Député, sénateur, collaborateur, agents des services des assemblées",
-        "NA",
+        "Non renseigné",
         "Membre du Gouvernement ou membre de cabinet ministériel",
         'Premier ministre',
         "Agent de l’État, d’un centre hospitalier, ou d’une collectivité territoriale"
@@ -393,12 +377,12 @@ def browse_agora(data):
                 montant=extract_budget(ex['montantDepense'])
                 montant_ttl_declares+=montant
             else:
-                montant='NA'
+                montant='Non renseigné'
             if 'nombreSalaries' in ex and int(ex['nombreSalaries'])>0 and int(ex['nombreSalaries'])<42:
                 salaries=int(ex['nombreSalaries'])
                 salaries_ttl_declares+=salaries
             else:
-                salaries='NA'
+                salaries='Non renseigné'
             try:
                 #for outliers and filling NAs
                 triplets_ressources+=[((transf(int(montant))),int(salaries),int(poids_activites_exercice))]
@@ -408,13 +392,13 @@ def browse_agora(data):
 
 
             if not 'activites' in ex or len(ex['activites'])==0:
-                if (montant!='NA' and int(montant)!=10000) or int(ex['nombreActivite'])>0:#pas d'action enregistrée mais on comptabilise une activité en raison des ressources. On met comme tiers tous les clients de la firme
+                if (montant!='Non renseigné' and int(montant)!=10000) or int(ex['nombreActivite'])>0:#pas d'action enregistrée mais on comptabilise une activité en raison des ressources. On met comme tiers tous les clients de la firme
                     printjs_debug(ex)
                     print_debug('ghost exercice')#on créée une activité fictive
                     ex['activites']=[{'publicationCourante':{ "identifiantFiche" : "XXXXX", "objet" : "en propre non renseigné",
-                                                                "domainesIntervention":secteurs_firme if IMPUTER_DOMAINE else ['NA'] ,
+                                                                "domainesIntervention":secteurs_firme if IMPUTER_DOMAINE else ['Non renseigné'] ,
                                                                 "actionsRepresentationInteret" : [
-                                                                    {"reponsablesPublics" : ['NA'],
+                                                                    {"reponsablesPublics" : ['Non renseigné'],
                                                                         "decisionsConcernees" : [0],
                                                                         "actionsMenees" : [0],
                                                                         "tiers" :  []#remplacé automatiquement après par les clients de la firme
@@ -510,17 +494,18 @@ def browse_agora(data):
     printjs_debug(counts)
 
 
-    results.update({"nombre de firmes":counter,
+    to_update={"nombre de firmes":counter,
                     'nombre d actions':nb_actions,
                     'montant ttl declaré':montant_ttl_declares,
                     'salariés ttl declarés':salaries_ttl_declares,
                     'ressources déclarées estimées':montant_ttl_declares+salaries_ttl_declares*COST_LOBBYIST,
-                    'nb tiers':len(tiers)})
-    printjs(results)
+                    }
+    printjs(to_update)
+    results.update(to_update)
 
 
-    results['Cibles']=counts
-    results['tiers']=len(tiers)
+    results['Responsables visés']=counts
+    results['nombre de tiers']=len(tiers)
     
     print_debug(missing)
     print_debug('missing')
@@ -629,7 +614,7 @@ PRIVATE_LABELS=['Société commerciale',
 POSSIBLE_LABELS=['prive','syndicat','public','collectivite']
 
 #create-dir
-directory='results/'+FILE_SUFFIX
+directory='resultats/'+FILE_SUFFIX
 if os.path.exists(directory):
     # If it exists, append a suffix until a non-existing directory name is found
     i = 1
@@ -715,25 +700,25 @@ def get_classes_tiers():
 
     public100={t for t in tiers if tiers[t]['classes']['public']==100}
     print(random_elements(public100,20))
-    print('public100 sample')
+    print('échantillon 100% public')
 
     public75={t for t in tiers if tiers[t]['classes']['public']<100 and tiers[t]['classes']['public']>50}
     print(random_elements(public75,20))
-    print('public75 sample')
+    print('échantillon entre 50 et 100% public')
 
 
     public50={t for t in tiers if tiers[t]['classes']['public']==50}
     print(random_elements(public50,20))
-    print('public50 sample')
+    print('échantillon 50% public')
 
 
     prive100={t for t in tiers if tiers[t]['classes']['prive']==100}
     print(random_elements(prive100,20))
-    print('prive100 sample')
+    print('échantillon 100% privé')
 
 
     print_debug(missing)
-    print('missing - note arbitraire, a noter dans l ideal',len(missing))
+    print('nombre de firmes sans classification:',len(missing))
 
 
     print('classes')
@@ -741,7 +726,7 @@ def get_classes_tiers():
     print({k:classes_hist[k]/total for k in classes_hist})
     plt.bar(POSSIBLE_LABELS,[classes_hist[cl] for cl in POSSIBLE_LABELS])
     plt.xlabel("Classes")
-    plt.ylabel("Nombre de mandants")
+    plt.ylabel("Nombre de clients")
     # print(double_notation)
     # print(np.mean(double_notation))
     # print(np.mean(confiances))
@@ -752,7 +737,7 @@ def get_classes_tiers():
     # # Créer un histogramme
     # plt.bar(bins[0:-1], hist)
 
-    plt.title('Distribution interêt public/privé')# - Gini:'+str(gini))
+    plt.title('Nombre de clients par classe')# - Gini:'+str(gini))
     results['classes manuelles']=classes_manuelles
     results['classifs_tiers']=classes_hist
     s=sum([v for (k,v) in classes_hist.items()])
@@ -760,9 +745,8 @@ def get_classes_tiers():
     results['syndicats agricole']=synd_agro
     results['syndicats agricole_%']=synd_agro*100/s
     if SAMPLE=="all":
-        print('save histogram')
-
         plt.savefig(RESULTS_DIR+'/classes-clients-'+FILE_SUFFIX+'.jpg', format='jpg')
+        print('histogram saved')
     # Afficher l'histogramme
     #plt.show()
     plt.clf()
@@ -775,7 +759,7 @@ def treat_data_pb():
     global firmes
     global triplets_ressources
     global CORRECT_OUTLIERS
-    global AGRESSIVE
+    global STRICT
     global seuils
     global transf
     print('treat data pb and compute ressources ******')
@@ -789,7 +773,7 @@ def treat_data_pb():
     #Si le zscore est plus grand (ou plus petit) que le seuil indiqué, on classifie comme outlier, et on stocke dans firmes[firme][période]{zscore,recommanded}
     #les seuils ont été choisis de manière empirique
     if CORRECT_OUTLIERS:
-        if AGRESSIVE!="agressive":
+        if STRICT!="strict":
             seuils=[[4.5,-3],[3.8,-1.4]]#conservateur
         else:
             seuils=[[3.5,-2],[3.5,-1.5]]#agressif
@@ -866,10 +850,10 @@ def treat_data_pb():
             print_debug(t)
             if t[2]==0:
                 continue
-            if t[0]!='NA':
+            if t[0]!='Non renseigné':
                 t[0]=(transf(t[0]))
             #print(t)
-            nas = t.count("NA")
+            nas = t.count("Non renseigné")
             print_debug('nas',nas)
             if nas==0:
                 if not CORRECT_OUTLIERS:
@@ -938,10 +922,10 @@ def treat_data_pb():
             salaries_ttl_calcule+=firmes[f][p]['nbSalaries']
         
     printjs_debug(glob_corrected)
-    print('outliers corrected',len(glob_corrected))
+    print_debug('outliers corrected',len(glob_corrected))
 
 
-    res_data_pb={'valeurs imputées':len(glob_imputed),'montant total calculé':montant_ttl_calcule,'salariés total calculé':salaries_ttl_calcule}
+    res_data_pb={'valeurs imputées':len(glob_imputed),'montant total calculé':montant_ttl_calcule,'nb salariés total calculé':salaries_ttl_calcule}
     printjs(res_data_pb)
     results['outliers et données manquantes']=res_data_pb
 
@@ -985,14 +969,15 @@ def stats_secteurs():#basé sur secteurs des firmes, et non pas secteurs des act
                 secteurs[s]+=ress_sec_f
             else:
                 secteurs[s]=ress_sec_f
-
+    
+    secteurs=dict(sorted(secteurs.items(),reverse=True))
     print('secteurs')
     printjs(secteurs)
 
-    results['secteurs']=secteurs
+
+    results['secteurs par firmes']=secteurs
     sect_short=[]
 
-    secteurs=dict(sorted(secteurs.items()))
     for s in secteurs:
         l=s.split(' ')
         sec=' '.join(l[0:3])
@@ -1004,7 +989,7 @@ def stats_secteurs():#basé sur secteurs des firmes, et non pas secteurs des act
         return ['\n'.join(textwrap.wrap(label, width)) for label in labels]
     bar_width = 0.5
     sect_short = wrap_labels(list(secteurs.keys()), 40)  # Ajustez le nombre 20 pour la largeur souhaitée
-    resources = list(secteurs.values())
+    resources =[v* 1e-6 for v in secteurs.values()] 
 
     # Créer une figure et un axe
     fig, ax = plt.subplots()
@@ -1014,8 +999,8 @@ def stats_secteurs():#basé sur secteurs des firmes, et non pas secteurs des act
 
     # Ajouter des étiquettes et un titre
     ax.set_ylabel('Secteurs')
-    ax.set_xlabel('Ressources')
-    ax.set_title('Secteurs: FILE_SUFFIX')
+    ax.set_xlabel('Ressources (Millions €)')
+    #ax.set_title('Secteurs: '+FILE_SUFFIX)
     ax.set_yticks(range(len(secteurs)))
     ax.set_yticklabels(sect_short, fontsize='small')
 
@@ -1055,7 +1040,7 @@ def ress_actions():
                     if ress_act>1000000:
 
                         print(act)
-                        print('big ressource, means the outliers work was not done properly :)')
+                        print('-> valeur TRES aberrante!')
                     actions[act][p][f][code]['ressources']=ress_act
 
                     
@@ -1123,8 +1108,19 @@ def classif_actions_by_mean():#chaque action a comme classif la moyenne des clas
                     #'mettre au prorata s'il y a plusieurs domaines d'un meme secteur
                     secteurs_action={d:0 for d in DOMAINE}
                     for d in action['domaines']:
+                        # print(SECTEUR[d])
+                        # print(objet)
                         secteurs_action[SECTEUR[d]]+=ress_act/len(action['domaines'])#sums to ress_act
-                    cibles_action={c:ress_act/len(action['cibles']) for c in action['cibles']}
+
+                        #monitor what private firm is involved in protection sociale:
+                        # if 'protection sociale' in SECTEUR[d]:
+                        #     print('*',d)
+                        #     print('*',action['tiers'],'?')
+                        #     print(objet)
+                        #     if 'prive' in mean_classif_wgt and mean_classif_wgt['prive']>0:
+                        #         printjs(mean_classif_wgt)
+                        #         input('?')
+                    cibles_action={c:ress_act/(len(action['cibles'])*100) for c in action['cibles']}
 
 
                     actions_by_classe=add_values(actions_by_classe,mean_classif_wgt)
@@ -1150,11 +1146,49 @@ def classif_actions_by_mean():#chaque action a comme classif la moyenne des clas
         # if round(ttl_ress_classes)!=round(ttl_ress_sect) or round(ttl_ress_sect)!=round(ttl_ress_croise) or round(ttl_ress_croise)!=round(ttl_ress_so_far):#check
         #     input('?')
 
-              
+    if IMPUTER_DOMAINE:
+        del croise_secteur_classif['Non renseigné']
+        del actions_by_secteur['Non renseigné']
+    
+    actions_by_secteur=dict(sorted(actions_by_secteur.items()))
+    croise_secteur_classif=dict(sorted(croise_secteur_classif.items(),reverse=True))
+    croise_cibles_classif=dict(sorted(croise_cibles_classif.items()))
+    
+    ttl=sum([v for (c,v) in actions_by_classe.items()])
+    actions_by_classe_pc={}
+    for cl in actions_by_classe:
+        actions_by_classe_pc[cl+' %']=actions_by_classe[cl]/ttl
+    actions_by_classe.update(actions_by_classe_pc)
+ 
+    croise_secteur_classif_pc={}
+    grand_ttl=0
+    for s in croise_secteur_classif:
+        ttl=sum([v  for (x,v) in croise_secteur_classif[s].items()])
+        grand_ttl+=ttl
+        croise_secteur_classif_pc[s]=croise_secteur_classif[s].copy()
+        croise_secteur_classif_pc[s]['total']=ttl
+        for c in croise_secteur_classif[s]:
+            croise_secteur_classif_pc[s][c+' %']=croise_secteur_classif[s][c]/ttl
+    croise_secteur_classif_pc['total']=grand_ttl
+
+
+    croise_cibles_classif_pc={}
+    grand_ttl=0
+    for s in croise_cibles_classif:
+        ttl=sum([v  for (x,v) in croise_cibles_classif[s].items()])
+        grand_ttl+=ttl
+        croise_cibles_classif_pc[s]=croise_cibles_classif[s].copy()
+        croise_cibles_classif_pc[s]['total']=ttl
+        for c in croise_cibles_classif[s]:
+            croise_cibles_classif_pc[s][c+' %']=croise_cibles_classif[s][c]/ttl if ttl>0 else 0
+    croise_cibles_classif_pc['total']=grand_ttl
 
     
+
+    #croise_secteur_classif_pc=dict(sorted(croise_secteur_classif_pc.items(),key=lambda x:x[1]['total']))
+    
     print('###')
-    results.update({'actions_par_classe':actions_by_classe,'actions_par_secteur':actions_by_secteur,'croisement secteur/classif':croise_secteur_classif,'croisement cibles classif':croise_cibles_classif})
+    results.update({'actions par classe':actions_by_classe,'actions par secteur':actions_by_secteur,'croisement secteur/classif':croise_secteur_classif_pc,'croisement cibles/classif':croise_cibles_classif_pc})
     print('check total',ttl_ress_so_far)
 
 
@@ -1171,13 +1205,12 @@ def classif_actions_by_mean():#chaque action a comme classif la moyenne des clas
         plt.bar(POSSIBLE_LABELS,[actions_by_classe[cl] for cl in POSSIBLE_LABELS])
         plt.xlabel("Classes")
         plt.ylabel("Poids actions")
-        plt.title('Distribution interêt public/privé')# - Gini:'+str(gini))
+        plt.title('Investissements par classe')# - Gini:'+str(gini))
         plt.savefig(RESULTS_DIR+'/classifs_actions_'+FILE_SUFFIX+'.jpg', format='jpg')
         #plt.show()
         plt.clf()
 
         #plot hist secteur
-        actions_by_secteur=dict(sorted(actions_by_secteur.items()))
 
         print('secteurs actions')
         printjs(actions_by_secteur)
@@ -1197,9 +1230,9 @@ def classif_actions_by_mean():#chaque action a comme classif la moyenne des clas
 
         # Extraire les noms des secteurs industriels et les données de financement
         secteurs = list(croise_secteur_classif.keys())
-        financements_publics = [croise_secteur_classif[secteur]['public'] for secteur in secteurs]
-        financements_prives = [croise_secteur_classif[secteur]['prive'] for secteur in secteurs]
-        financements_syndicats = [croise_secteur_classif[secteur]['syndicat'] for secteur in secteurs]
+        financements_publics = [croise_secteur_classif[secteur]['public']* 1e-6 for secteur in secteurs]
+        financements_prives = [croise_secteur_classif[secteur]['prive']* 1e-6 for secteur in secteurs]
+        financements_syndicats = [croise_secteur_classif[secteur]['syndicat']* 1e-6 for secteur in secteurs]
 
         # Emballer les labels pour les légendes longues
         def wrap_labels(labels, width):
@@ -1220,12 +1253,12 @@ def classif_actions_by_mean():#chaque action a comme classif la moyenne des clas
         #bar3 = ax.bar(index, financements_syndicats, bar_width, label='Syndicats', bottom=financements_publics)
 
         ax.set_ylabel('Secteurs')
-        ax.set_xlabel('Classe')
-        ax.set_title('Répartition des classes par secteur industriel')
+        ax.set_xlabel('Ressources (Millions €)')
+        #ax.set_title('Lobbying par secteur')
         ax.set_yticks(index)
         ax.set_yticklabels(secteurs, fontsize='small')
         plt.subplots_adjust(left=0.5)
-        ax.legend()
+        ax.legend(loc='center right', prop={'size': 8})
 
         #ax.xticks(rotation=90)
         #ax.subplots_adjust(wspace=0.8)
@@ -1236,13 +1269,13 @@ def classif_actions_by_mean():#chaque action a comme classif la moyenne des clas
         plt.clf()
 
 
-        #plot hist croisé secteurs 
+        #plot hist croisé cibles
 
-        # Extraire les noms des secteurs industriels et les données de financement
+        # Extraire les noms des cibles et les données de financement
         cibles = list(croise_cibles_classif.keys())
-        financements_publics = [croise_cibles_classif[c]['public'] for c in cibles]
-        financements_prives = [croise_cibles_classif[c]['prive'] for c in cibles]
-        financements_syndicats = [croise_cibles_classif[c]['syndicat'] for c in cibles]
+        financements_publics = [croise_cibles_classif[c]['public']*1e-6 for c in cibles]
+        financements_prives = [croise_cibles_classif[c]['prive']*1e-6  for c in cibles]
+        financements_syndicats = [croise_cibles_classif[c]['syndicat']*1e-6  for c in cibles]
 
 
         # Emballer les labels pour les légendes longues
@@ -1264,8 +1297,8 @@ def classif_actions_by_mean():#chaque action a comme classif la moyenne des clas
         #bar3 = ax.bar(index, financements_syndicats, bar_width, label='Syndicats', bottom=financements_publics)
 
         ax.set_ylabel('Cibles')
-        ax.set_xlabel('Classe')
-        ax.set_title('Répartition des classes par cible')
+        ax.set_xlabel('Investissements (Millions €)')
+        ax.set_title('Lobbying par responsable visé')
         ax.set_yticks(index)
         ax.set_yticklabels(wrapped_labels, fontsize='small')
         plt.subplots_adjust(left=0.4)
