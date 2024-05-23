@@ -2,7 +2,7 @@
 Analyse statistique du registre des lobbys de la HATVP.
 Script utilisé pour l'analyse du répertoire des lobbyistes de la HATVP. Voir l'article correspondant.
 
-Dans le dossier résultats: résultats numériques et visualisations d'analyse, sous différents jeux de paramètres
+Dans le dossier résultats: résultats numériques et visualisations, sous différents jeux de paramètres
 
 ## Installation
  - Installez Python3
