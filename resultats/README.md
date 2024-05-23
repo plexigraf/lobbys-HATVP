@@ -4,7 +4,7 @@ Chaque dossier contient les résultats avec un certain type de paramètres, indi
  - "out=True" signifie que les valeurs aberrantes ont été corrigés, "out=False" signifie qu'elles ne l'ont pas été.
  - "agressive" signifie que des seuils plus restrictifs ont été appliqués pour détecter les valeurs aberrantes, et que donc plus de valeurs ont été corrigées.
  - "sqrt" ou "ln", transformation corrective du budget d'un exercice avant de tester si outlier
- - lobbyist=3000 est le coût annuel d'un lobbyiste pris en compte pour estimer les ressources dépensées.
+ - lobbyist=0 est le coût annuel d'un lobbyiste pris en compte pour estimer les ressources dépensées.
  - "acts=formula" signifie que la formule a été prise en compte pour le calcul des ressources d'une action, "acts=uni" signifie que toutes les actions ont la même ressource, "acts=by-ex" signifie que chaque action a le même poids au sein d'un exercice.
  -  "2017-2022" période prise en compte
 
