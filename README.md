@@ -4,11 +4,11 @@ Script utilisé pour l'analyse du répertoire des lobbyistes de la HATVP. Voir l
 
 Dans le dossier résultats: résultats numériques et visualisations, sous différents jeux de paramètres
 
-## Installation
- - Installez Python3
+## Installation dans un meme répertoire
  - Téléchargez le script lobbys-rfap.py
  - Téléchargez le répertoire agora_repertoire_opendata.json sur le site de la HATVP
  - Téléchargez les classifications classif_clients.json
+ - Installez Python3
  - Exécutez le script
 
 ## Paramètres
@@ -26,3 +26,8 @@ Divers paramètres sont ajustables dans le préambule du script:
 ### Paramètres spécifiques de détection des outliers:
  - STRICT ('strict' ou ''): Seuils plus ou moins bas de détection d'outliers
  - DEFORM ('ln', 'sqrt' ou 'id'): Transformation à appliquer au budget avant de tester si outlier 
+ 
+ ### Pour filtrer avec une liste de mots-clés (par ex:[ 'tabac', 'tobacco', 'morris', ...])
+  - KEYWORDFILTER: True
+  - KeywordStr = '-KEYWORDS-tobacco-' par exemple (pour nommer les fichiers de résultats)
+  - KEYWORDS = [    'TABAC', 'VAPOTAGE', ...] (par exemple)

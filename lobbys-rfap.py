@@ -9,14 +9,14 @@ if CORRECT_OUTLIERS:#pour corriger les budgets aberrants des assos de lobbying
     out_str+='-'+STRICT+'-'+DEFORM
 SAMPLE="all" #n premieres entrees uniquement (pour dev), ou "all"
 sampleStr="-sample"+str(SAMPLE) if SAMPLE else ""
-UNIFORM_RESS_ACTIONS=True#toutes les actions ont les memes ressources
+UNIFORM_RESS_ACTIONS=False#toutes les actions ont les memes ressources
 if UNIFORM_RESS_ACTIONS:
     UNIFORM_WEIGHT=True#not used
     COST_LOBBYIST=0
     str_wgt_actions="unif-"
 else:
-    UNIFORM_WEIGHT=True#chaque action a la même ressource au sein d'un exercice
-    COST_LOBBYIST=0000#cout annuel estimé d'un lobbyiste
+    UNIFORM_WEIGHT=False#chaque action a la même ressource au sein d'un exercice
+    COST_LOBBYIST=0000#cout annuel estimé d'un lobbyiste - en fait déjà pris en compte dans le repertoire
     str_wgt_actions="by-ex-" if UNIFORM_WEIGHT else "formula-"
 strLobbyist='' if (UNIFORM_RESS_ACTIONS or COST_LOBBYIST==0 )else '-lobbyist='+str(COST_LOBBYIST)
 YEARS=[]# include 2017? 2023? - exercices se terminant une année donnée (2016 ou plus)
@@ -24,7 +24,14 @@ yrs_str='' if len(YEARS)==0 else str(YEARS[0]) if len(YEARS)==1 else str(YEARS[0
 IMPUTER_DOMAINE=True#quand pas de domaine renseigné sur une action, on prend les secteurs de la firme (s'il y en a...)
 domaineStr='' if IMPUTER_DOMAINE else '-pas_imputer_domaine'
 
-FILE_SUFFIX=FOURCHETTE+'-out='+out_str+'-acts='+str(str_wgt_actions)+strLobbyist+'-'+sampleStr+'-'+yrs_str+domaineStr
+##### Keyword filter - only keep entries with KEYWORDS in their entry somewhere
+KEYWORD_FILTER = True
+KeywordStr = '-KEYWORDS-tobacco-' if KEYWORD_FILTER else ''
+KEYWORDS = [    'TABAC', 'VAPOTAGE',     'NICOTINE', 'CIGARETTE',    'TABAGISME',   'BURALISTE',     'MORRIS',     'RÉDUCTION DE RISQUE',     'COMBUSTION',     'RÉDUCTION DES RISQUES',    'RISQUE RÉDUIT',     'JT INTERNATIONAL',     'ALLUMETTES',     'SEITA',    'TOBACCO' ]
+
+
+
+FILE_SUFFIX=KEYWORDStr + FOURCHETTE+'-out='+out_str+'-acts='+str(str_wgt_actions)+strLobbyist+'-'+sampleStr+'-'+yrs_str+domaineStr
 
 verbose="synthese"#"debug"
 
@@ -215,7 +222,8 @@ DOMAINE={
     'Non renseigné':['Non renseigné']
 }
 
-results['sous-secteurs']=DOMAINE
+if not KEYWORD_FILTER:
+    results['sous-secteurs']=DOMAINE
 
 SECTEUR={}
 
@@ -230,10 +238,6 @@ CIBLES=["Titulaire d'un emploi à la décision du Gouvernement",'Premier ministr
         "Élu ou membre de cabinet d'une collectivité territoriale"
     ]
 
-
-
-
-
 for s in DOMAINE:
     for d in DOMAINE[s]:
         if d!="nombre":
@@ -242,8 +246,7 @@ for s in DOMAINE:
                 print('doublon')
             else:
                 SECTEUR[d]=s
-print('domaines')
-printjs(DOMAINE)
+
 missing_secteurs=set()
 
 def browse_agora(data):
@@ -282,7 +285,7 @@ def browse_agora(data):
             input(cible)
         return cibles
     
-    def merge_actions(liste_de_dicts):#utilisé pour fusionner des actions d'une activité
+    def merge_actions(liste_de_dicts):#utilisé pour fusionner des actions d'une activité sur plusieurs années
         # Initialiser le dictionnaire résultant
         resultat = {}
 
@@ -314,13 +317,45 @@ def browse_agora(data):
         low=int(l[1].split('euros')[0].replace(' ','')) if len(l)>1 else 0
         return 0.5*(high+low) if FOURCHETTE=='average' else high if FOURCHETTE=='high' else low
 
+    # Fonction pour transformer un dictionnaire en une seule grande chaîne de caractères
+    def dict_to_string(d):
+        # On transforme chaque clé et chaque valeur en une chaîne et on les concatène
+        if isinstance(d, str):
+            return d
+        result = []
+        for key, value in d.items():
+            if isinstance(value, dict):
+                # Si la valeur est un dictionnaire, on la convertit récursivement en chaîne
+                result.append(dict_to_string(value))
+            else:
+                # Sinon, on ajoute la clé et la valeur en format clé=valeur
+                result.append(f"{key}={value}")
+        return " ".join(result)
+    # Fonction pour tester si un des mots-clés est présent dans la grande chaîne
+    def search_dict_for_KEYWORDS(data, KEYWORDS):
+        # Convertir le dictionnaire en une seule chaîne
+        data_string = dict_to_string(data)
+        
+        # Vérifier si un des mots-clés est dans la chaîne
+        for keyword in KEYWORDS:
+            if re.search(r'\b' + re.escape(keyword) + r'\b', data_string, re.IGNORECASE):
+                print(f"Le mot-clé '{keyword}' a été trouvé")
+                return True
+        return False
+
+       
+
     missing={}
     tiers_pas_clients={}
     clients_firme={}
     montant_ttl_declares=0
+    filtered_montant_ttl_declares=0
     salaries_ttl_declares=0
+    filtered_salaries_ttl_declares=0
     counter=0
-    nb_actions=0
+    nb_filtered_firmes=0
+    nb_filtered_actions=0
+    filtered_tiers = []
     for firme in data:
         #allKeys |= set(firme.keys())
         counter=counter+1
@@ -329,8 +364,18 @@ def browse_agora(data):
         print_debug('********')
         nom=best_nom(firme)
         other_names[nom]=[firme[key] for key in ['denomination','nomUsage','nomUsageHatvp','sigleHatvp'] if key in firme and firme[key]!=nom]
+        print(nom, other_names[nom])
         print_debug(nom+":"+str(other_names[nom]))
         possible_names=other_names[nom]+[nom]
+
+        filtered_firm=False
+        if KEYWORD_FILTER:
+            if (KEYWORD_FILTER and search_dict_for_KEYWORDS(firme, KEYWORDS)):
+                nb_filtered_firmes+=1
+                filtered_firm=True
+                print('keyword found for '+nom)
+        else:
+            nb_filtered_firmes+=1
 
         lab=firme['categorieOrganisation']['label']
         print_debug('label: '+lab)
@@ -352,11 +397,14 @@ def browse_agora(data):
                         'categorie':firme['categorieOrganisation']['label'],
                         'affiliations':firme['affiliations'],
                         'Nom complet':firme['denomination'],
-                        'Secteurs':secteurs_firme}
+                        'Secteurs':secteurs_firme,
+                        'filtered' : filtered_firm}
         #il faudrait faire afficher les options par plexigraf
 
         clients_firme[nom]={cl['denomination']:{'found':False} for cl in firme['clients']}
         #{client1:{'found':False},client2:...}
+
+        filtered_clients = [cl for cl in firme['clients'] if search_dict_for_KEYWORDS(cl, KEYWORDS)]
 
         print_debug('******exercices')
         for ex in firme['exercices']:
@@ -388,22 +436,23 @@ def browse_agora(data):
                 triplets_ressources+=[((transf(int(montant))),int(salaries),int(poids_activites_exercice))]
                 triplet=True
             except:
-                print_debug('données manquantes')
+                print_debug('données ressources manquantes')
 
-
+            ex_has_filtered_actions = False
             if not 'activites' in ex or len(ex['activites'])==0:
                 if (montant!='Non renseigné' and int(montant)!=10000) or int(ex['nombreActivite'])>0:#pas d'action enregistrée mais on comptabilise une activité en raison des ressources. On met comme tiers tous les clients de la firme
                     printjs_debug(ex)
                     print_debug('ghost exercice')#on créée une activité fictive
                     ex['activites']=[{'publicationCourante':{ "identifiantFiche" : "XXXXX", "objet" : "en propre non renseigné",
-                                                                "domainesIntervention":secteurs_firme if IMPUTER_DOMAINE else ['Non renseigné'] ,
-                                                                "actionsRepresentationInteret" : [
-                                                                    {"reponsablesPublics" : ['Non renseigné'],
-                                                                        "decisionsConcernees" : [0],
-                                                                        "actionsMenees" : [0],
-                                                                        "tiers" :  []#remplacé automatiquement après par les clients de la firme
-                                                        }           ]}
-                                     }]
+                                "domainesIntervention":secteurs_firme if IMPUTER_DOMAINE else ['Non renseigné'] ,
+                                "actionsRepresentationInteret" : [
+                                    {"reponsablesPublics" : ['Non renseigné'],
+                                        "decisionsConcernees" : [0],
+                                        "actionsMenees" : [0],
+                                        "tiers" :  []#remplacé automatiquement après par les clients de la firme
+                        }           
+                        ]}
+                         }]
 
                     if nom in tiers:
                         tiers[nom]['actions']+=[ 'en propre non renseigné']
@@ -421,9 +470,9 @@ def browse_agora(data):
                     print_debug(len(ex['activites']),ex['nombreActivite'])
                     print_debug('manque activité(s)')
                 for act in ex['activites']:
-                    nb_actions+=1
                     act=act['publicationCourante']
                     action=merge_actions(act['actionsRepresentationInteret'])
+                    print_debug(action)
                     poids_action=poids_formula(action)
                     poids_activites_exercice+=poids_action
                     objet=act['objet']
@@ -437,6 +486,7 @@ def browse_agora(data):
                     action_tiers_modif=[]
                     if len(action['tiers'])==0:#par défaut, on met tous les clients. 
                         action['tiers']=[k for k in clients_firme[nom]]
+                        
                         if len(clients_firme[nom])==0:
                             print_debug('pas de clients et pas de tiers sur cette action - en propre par défaut')
                             action['tiers']=['en propre']
@@ -474,7 +524,17 @@ def browse_agora(data):
                     for c in action['reponsablesPublics']:
                         cibles_action+=reduce_cible(c)
 
-                    actions[objet][periode][nom][act['identifiantFiche']]={'tiers':action_tiers_modif,'poids_abs':poids_action,'domaines':act['domainesIntervention'],'cibles':cibles_action} #on enregistre les tiers et le poids de l'action et les cibles 
+                    filtered_action = False
+                    if KEYWORD_FILTER:
+                        if search_dict_for_KEYWORDS(action, KEYWORDS):
+                            print(periode,act['objet'][0:1000] + '...')
+                            nb_filtered_actions += 1
+                            filtered_action = True
+                            ex_has_filtered_actions = True
+                            filtered_tiers += [{nom:cl for cl in action['tiers'] if search_dict_for_KEYWORDS(cl, KEYWORDS)}]
+                    else:
+                        nb_filtered_actions += 1
+                    actions[objet][periode][nom][act['identifiantFiche']]={'tiers':action_tiers_modif,'poids_abs':poids_action,'domaines':act['domainesIntervention'],'cibles':cibles_action,'filtered': filtered_action} #on enregistre les tiers et le poids de l'action et les cibles 
                     for d in act['domainesIntervention']:
                         if d not in SECTEUR:
                             missing_secteurs.add(d)
@@ -485,7 +545,7 @@ def browse_agora(data):
                 printjs_debug(firmes[nom][periode])
                 printjs_debug(ex)
                 print_debug('double période - très rare, uniquement FEDERATION NAL METIERS STATIONNEMENT, il faudrait les fusionner mais tant pis. a minima il faudrait garder celui qui a les activités et on lui imputera les ressources')
-            firmes[nom][periode]={'montant':montant,'nbSalaries':salaries,'poids_exercice':poids_activites_exercice,'triplet':True,'outliers':{}}
+            firmes[nom][periode]={'montant':montant,'nbSalaries':salaries,'poids_exercice':poids_activites_exercice,'triplet':True,'outliers':{},'has_filtered_actions':ex_has_filtered_actions}
         clients_firme[nom]=[cl  for cl in clients_firme[nom] if not clients_firme[nom][cl]['found']]
         if len(clients_firme[nom])==0:
             del clients_firme[nom]
@@ -494,68 +554,78 @@ def browse_agora(data):
     printjs_debug(counts)
 
 
-    to_update={"nombre de firmes":counter,
-                    'nombre d actions':nb_actions,
-                    'montant ttl declaré':montant_ttl_declares,
-                    'salariés ttl declarés':salaries_ttl_declares,
-                    'ressources déclarées estimées':montant_ttl_declares+salaries_ttl_declares*COST_LOBBYIST,
+
+    to_update_filtered={"nombre de firmes":nb_filtered_firmes,#filter: nb de firmes impliquées dans les mots clés (pas nécessairement via actions,ça peut être les clients)
+                    'nombre d actions':nb_filtered_actions
                     }
-    printjs(to_update)
-    results.update(to_update)
+    printjs(to_update_filtered)
+    results.update(to_update_filtered)
 
+    if not KEYWORD_FILTER:
+        to_update={    'montant ttl declaré':montant_ttl_declares,
+                        'salariés ttl declarés':salaries_ttl_declares,
+                        'ressources déclarées estimées':montant_ttl_declares+salaries_ttl_declares*COST_LOBBYIST,
+                        }
+        printjs(to_update)
+        results.update(to_update)
+        results['nombre de tiers']=len(tiers)
 
-    results['Responsables visés']=counts
-    results['nombre de tiers']=len(tiers)
+    if not KEYWORD_FILTER:
+        results['Responsables visés']=counts
+    else:
+        results['tiers filtrés']=filtered_tiers
+        results['nombre de tiers']=len(filtered_tiers)
     
-    print_debug(missing)
-    print_debug('missing')
+    if not KEYWORD_FILTER:
+        print_debug(missing)
+        print_debug('missing')
 
-    printjs_debug(tiers_pas_clients)
-    ttl=sum([len(tiers_pas_clients[t]) for t in tiers_pas_clients])
-    print('tiers pas clients, par nom de cabinet de lobbying - a confronter avec other_names',ttl)
+        printjs_debug(tiers_pas_clients)
+        ttl=sum([len(tiers_pas_clients[t]) for t in tiers_pas_clients])
+        print('tiers pas clients, par nom de cabinet de lobbying - a confronter avec other_names',ttl)
 
-    printjs_debug(clients_firme)
-    ttl=sum([len(clients_firme[f]) for f in clients_firme])
-    print('clients pas trouvés',ttl)
-
-
-    unique_clients=set()
-    for f in clients_firme:
-        unique_clients.update(clients_firme[f])
+        printjs_debug(clients_firme)
+        ttl=sum([len(clients_firme[f]) for f in clients_firme])
+        print('clients pas trouvés',ttl)
 
 
-
-    unique_clients_wo_class=set()
-    for u in unique_clients:
-        if not u in CLASSIF and u in other_names:
-            possible_names=other_names[u]
-            found=False
-            for n in possible_names:
-                if n in CLASSIF:
-                    found=True
-            if not found:
-                unique_clients_wo_class.add(u)
-    # with open('data-clients_wo_class.json','w') as file:
-    #     json.dump(list(unique_clients_wo_class), file, indent = 4, separators = (',', ':'))
+        unique_clients=set()
+        for f in clients_firme:
+            unique_clients.update(clients_firme[f])
 
 
-    results['incoherences clients/tiers']={'tiers pas clients':{'nombre':ttl,'par firme':tiers_pas_clients},
-                                           'clients pas trouvés':{'nombre':ttl,'par firme':clients_firme},
-                                           'unique clients pas trouvés':len(unique_clients)
-                                           }
 
-    print('unique clients sans classe qqs le nom',len(unique_clients_wo_class))
-    # if len(unique_clients_wo_class)==0:
-    #     input('?')
+        unique_clients_wo_class=set()
+        for u in unique_clients:
+            if not u in CLASSIF and u in other_names:
+                possible_names=other_names[u]
+                found=False
+                for n in possible_names:
+                    if n in CLASSIF:
+                        found=True
+                if not found:
+                    unique_clients_wo_class.add(u)
+        # with open('data-clients_wo_class.json','w') as file:
+        #     json.dump(list(unique_clients_wo_class), file, indent = 4, separators = (',', ':'))
 
-#save other names
+
+        results['incoherences clients/tiers']={'tiers pas clients':{'nombre':ttl,'par firme':tiers_pas_clients},
+                                            'clients pas trouvés':{'nombre':ttl,'par firme':clients_firme},
+                                            'unique clients pas trouvés':len(unique_clients)
+                                            }
+
+        print('unique clients sans classe qqs le nom',len(unique_clients_wo_class))
+        # if len(unique_clients_wo_class)==0:
+        #     input('?')
+
+    #save other names
 
 browse_agora(DATA)
-with open('other_names.json','w') as file:
+with open('other_names.json','w') as file:#sert a gérer le fait que des firmes ont plusieurs noms
     json.dump(other_names, file, indent = 4, separators = (',', ':'))
 
 print('missing secteurs',missing_secteurs)
-if missing_secteurs != set(''):
+if missing_secteurs != set(''):#check if all secteurs are in the list
     input('missing sthg')
 ####doublons gpt
 
@@ -633,7 +703,7 @@ print("Directory", directory, "created successfully")
 
 def get_classes_tiers():
     classes_manuelles=0
-     #affecte la valeur "privé" aux catégories corresp, sinon va chercher dans CLASSIF, et fait un histogramme de tous les tiers
+     #affecte la valeur "privé" aux catégories corresp, sinon va chercher dans CLASSIF, et fait un histogramme de tous les tiers si pas dans un recherche par mots clés
     
     classes_hist={cl:0 for cl in POSSIBLE_LABELS}#donnera l'histogramme
     missing=set()#entités sans note - devrait être vide
@@ -697,36 +767,36 @@ def get_classes_tiers():
         # Return a new list containing n randomly selected elements from the input list
         return random.sample(input_list, min(n, len(input_list)))
     
+    if not KEYWORD_FILTER:
+        public100={t for t in tiers if tiers[t]['classes']['public']==100}
+        print(random_elements(public100,20))
+        print('échantillon 100% public')
 
-    public100={t for t in tiers if tiers[t]['classes']['public']==100}
-    print(random_elements(public100,20))
-    print('échantillon 100% public')
-
-    public75={t for t in tiers if tiers[t]['classes']['public']<100 and tiers[t]['classes']['public']>50}
-    print(random_elements(public75,20))
-    print('échantillon entre 50 et 100% public')
-
-
-    public50={t for t in tiers if tiers[t]['classes']['public']==50}
-    print(random_elements(public50,20))
-    print('échantillon 50% public')
+        public75={t for t in tiers if tiers[t]['classes']['public']<100 and tiers[t]['classes']['public']>50}
+        print(random_elements(public75,20))
+        print('échantillon entre 50 et 100% public')
 
 
-    prive100={t for t in tiers if tiers[t]['classes']['prive']==100}
-    print(random_elements(prive100,20))
-    print('échantillon 100% privé')
+        public50={t for t in tiers if tiers[t]['classes']['public']==50}
+        print(random_elements(public50,20))
+        print('échantillon 50% public')
 
 
-    print_debug(missing)
-    print('nombre de firmes sans classification:',len(missing))
+        prive100={t for t in tiers if tiers[t]['classes']['prive']==100}
+        print(random_elements(prive100,20))
+        print('échantillon 100% privé')
 
 
-    print('classes')
-    total=sum([classes_hist[cl] for cl in classes_hist])
-    print({k:classes_hist[k]/total for k in classes_hist})
-    plt.bar(POSSIBLE_LABELS,[classes_hist[cl] for cl in POSSIBLE_LABELS])
-    plt.xlabel("Classes")
-    plt.ylabel("Nombre de clients")
+        print_debug(missing)
+        print('nombre de firmes sans classification:',len(missing))
+
+
+        print('classes')
+        total=sum([classes_hist[cl] for cl in classes_hist])
+        print({k:classes_hist[k]/total for k in classes_hist})
+        plt.bar(POSSIBLE_LABELS,[classes_hist[cl] for cl in POSSIBLE_LABELS])
+        plt.xlabel("Classes")
+        plt.ylabel("Nombre de clients")
     # print(double_notation)
     # print(np.mean(double_notation))
     # print(np.mean(confiances))
@@ -737,19 +807,19 @@ def get_classes_tiers():
     # # Créer un histogramme
     # plt.bar(bins[0:-1], hist)
 
-    plt.title('Nombre de clients par classe')# - Gini:'+str(gini))
-    results['classes manuelles']=classes_manuelles
-    results['classifs_tiers']=classes_hist
-    s=sum([v for (k,v) in classes_hist.items()])
-    results['classif_tiers_%']={k:100*v/s for (k,v) in classes_hist.items()}
-    results['syndicats agricole']=synd_agro
-    results['syndicats agricole_%']=synd_agro*100/s
-    if SAMPLE=="all":
-        plt.savefig(RESULTS_DIR+'/classes-clients-'+FILE_SUFFIX+'.jpg', format='jpg')
-        print('histogram saved')
-    # Afficher l'histogramme
-    #plt.show()
-    plt.clf()
+        plt.title('Nombre de clients par classe')# - Gini:'+str(gini))
+        results['classes manuelles']=classes_manuelles
+        results['classifs_tiers']=classes_hist
+        s=sum([v for (k,v) in classes_hist.items()])
+        results['classif_tiers_%']={k:100*v/s for (k,v) in classes_hist.items()}
+        results['syndicats agricole']=synd_agro
+        results['syndicats agricole_%']=synd_agro*100/s
+        if SAMPLE=="all":
+            plt.savefig(RESULTS_DIR+'/classes-clients-'+FILE_SUFFIX+'.jpg', format='jpg')
+            print('histogram saved')
+        # Afficher l'histogramme
+        #plt.show()
+        plt.clf()
 
 get_classes_tiers()
 
@@ -927,7 +997,9 @@ def treat_data_pb():
 
     res_data_pb={'valeurs imputées':len(glob_imputed),'montant total calculé':montant_ttl_calcule,'nb salariés total calculé':salaries_ttl_calcule}
     printjs(res_data_pb)
-    results['outliers et données manquantes']=res_data_pb
+
+    if not KEYWORD_FILTER:
+        results['outliers et données manquantes']=res_data_pb
 
     
 #     print_debug('outliers dépenses')
@@ -1014,7 +1086,8 @@ def stats_secteurs():#basé sur secteurs des firmes, et non pas secteurs des act
     #plt.show()
     plt.clf()
 
-stats_secteurs()
+if not KEYWORD_FILTER:
+    stats_secteurs()
 
 ########ACTIONS
 
@@ -1025,6 +1098,7 @@ def ress_actions():
 
     #on va calculer les ressources de chaque action, obtenu comme les ressources allouées par la firme à l'exercice contenant l'action, au prorata du poids de cette action
     #une action peut être effectuée sur plusieurs périodes et par plusieurs firmes, on calcule les ressources pour chaque occurence
+    #en cas de keyword filter, on compte que les actions filtrées lors du browse de agora
     for act in actions:
         action=actions[act]
         print_debug(act,'*** ressources action')
@@ -1033,6 +1107,8 @@ def ress_actions():
             for f in action[p]:
                 for code in action[p][f]:
                     #ressources
+                    if KEYWORD_FILTER and not actions[act][p][f][code]['filtered']:
+                        continue
                     poids_ex=firmes[f][p]['poids_exercice']
                     ress_ex=firmes[f][p]['ressources']
                     ress_act=1 if UNIFORM_RESS_ACTIONS else ress_ex* action[p][f][code]['poids_abs']/poids_ex#in main loop, by exercise of formula
@@ -1044,10 +1120,10 @@ def ress_actions():
                     actions[act][p][f][code]['ressources']=ress_act
 
                     
-
-    results['intitulés actions']=len(actions)
-    print('actions intitulés',len(actions))
-    printjs_debug(actions)
+    if not KEYWORD_FILTER:
+        results['intitulés actions']=len(actions)
+        print('actions intitulés',len(actions))
+        printjs_debug(actions)
 
 
 
@@ -1082,7 +1158,7 @@ def ress_actions():
 
 ress_actions()
 
-
+filtered_actions={}
 
 def classif_actions_by_mean():#chaque action a comme classif la moyenne des classifs de ses tiers, on ajoute toutes les classifs d'actions pour avoir l'histogramme final, on fait aussi l'histogramme par secteur
     croise_secteur_classif={k:{c:0 for c in POSSIBLE_LABELS} for k in DOMAINE}
@@ -1098,6 +1174,10 @@ def classif_actions_by_mean():#chaque action a comme classif la moyenne des clas
         for p in actions[objet]:
             for f in actions[objet][p]:
                 for code in actions[objet][p][f]:
+                    if KEYWORD_FILTER and not actions[objet][p][f][code]['filtered']:
+                        continue
+                    else:
+                        filtered_actions[objet]=[actions[objet]]
                     print_debug('new')
                     action=actions[objet][p][f][code]
 
@@ -1168,7 +1248,7 @@ def classif_actions_by_mean():#chaque action a comme classif la moyenne des clas
         croise_secteur_classif_pc[s]=croise_secteur_classif[s].copy()
         croise_secteur_classif_pc[s]['total']=ttl
         for c in croise_secteur_classif[s]:
-            croise_secteur_classif_pc[s][c+' %']=croise_secteur_classif[s][c]/ttl
+            croise_secteur_classif_pc[s][c+' %']=croise_secteur_classif[s][c]/(ttl + 0.1)
     croise_secteur_classif_pc['total']=grand_ttl
 
 
@@ -1313,8 +1393,10 @@ classif_actions_by_mean()
 
 printjs_debug(actions)
 if not UNIFORM_RESS_ACTIONS and CORRECT_OUTLIERS:
-    with open('actions.json','w') as file:
-        json.dump({'params':FILE_SUFFIX,'actions':actions}, file, indent = 4, separators = (',', ':'))
+    with open(RESULTS_DIR+'/filtered_actions.json','w') as file:
+        json.dump({'params':FILE_SUFFIX,'actions':filtered_actions}, file, indent = 4, separators = (',', ':'))
+
+
         
 exit()
 
@@ -1442,3 +1524,7 @@ if SAMPLE=="all":
 # Afficher l'histogramme
 #plt.show()
 plt.clf()
+
+if KEYWORD_FILTER:
+    with open(RESULTS_DIR + "/output.txt", "w") as f:
+        sys.stdout = f
