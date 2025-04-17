@@ -19,19 +19,20 @@ else:
     COST_LOBBYIST=0000#cout annuel estimé d'un lobbyiste - en fait déjà pris en compte dans le repertoire
     str_wgt_actions="by-ex-" if UNIFORM_WEIGHT else "formula-"
 strLobbyist='' if (UNIFORM_RESS_ACTIONS or COST_LOBBYIST==0 )else '-lobbyist='+str(COST_LOBBYIST)
-YEARS=[]# include 2017? 2023? - exercices se terminant une année donnée (2016 ou plus)
+YEARS=[2023]# include 2017? 2023? - exercices se terminant une année donnée (2016 ou plus)
 yrs_str='' if len(YEARS)==0 else str(YEARS[0]) if len(YEARS)==1 else str(YEARS[0])+'-'+str(YEARS[-1])
 IMPUTER_DOMAINE=True#quand pas de domaine renseigné sur une action, on prend les secteurs de la firme (s'il y en a...)
 domaineStr='' if IMPUTER_DOMAINE else '-pas_imputer_domaine'
 
 ##### Keyword filter - only keep entries with KEYWORDS in their entry somewhere
 KEYWORD_FILTER = True
-KeywordStr = '-KEYWORDS-tobacco-' if KEYWORD_FILTER else ''
+KeywordStr = '-KEYWORDS-agri-' if KEYWORD_FILTER else ''
+#KEYWORDS=['syndicat agricole']
 KEYWORDS = [    'TABAC', 'VAPOTAGE',     'NICOTINE', 'CIGARETTE',    'TABAGISME',   'BURALISTE',     'MORRIS',     'RÉDUCTION DE RISQUE',     'COMBUSTION',     'RÉDUCTION DES RISQUES',    'RISQUE RÉDUIT',     'JT INTERNATIONAL',     'ALLUMETTES',     'SEITA',    'TOBACCO' ]
 
 
 
-FILE_SUFFIX=KEYWORDStr + FOURCHETTE+'-out='+out_str+'-acts='+str(str_wgt_actions)+strLobbyist+'-'+sampleStr+'-'+yrs_str+domaineStr
+FILE_SUFFIX=KeywordStr + FOURCHETTE+'-out='+out_str+'-acts='+str(str_wgt_actions)+strLobbyist+'-'+sampleStr+'-'+yrs_str+domaineStr
 
 verbose="synthese"#"debug"
 
@@ -87,7 +88,7 @@ with open('classif_clients.json', 'r') as fich:#contains grades
     CLASSIF = json.load(fich)
 #with open('openAI/to-grade.json') as f:#elements fichier lobbys.json matched
 #    to_grade = json.load(f)
-with open('agora_repertoire_opendata.json') as f:#répertoire HATVP
+with open('agora_repertoire_opendata_2025.json') as f:#répertoire HATVP
     DATA = json.load(f)['publications']
 
 if SAMPLE!="all":
@@ -364,7 +365,7 @@ def browse_agora(data):
         print_debug('********')
         nom=best_nom(firme)
         other_names[nom]=[firme[key] for key in ['denomination','nomUsage','nomUsageHatvp','sigleHatvp'] if key in firme and firme[key]!=nom]
-        print(nom, other_names[nom])
+        print_debug(nom, other_names[nom])
         print_debug(nom+":"+str(other_names[nom]))
         possible_names=other_names[nom]+[nom]
 
@@ -1118,6 +1119,8 @@ def ress_actions():
                         print(act)
                         print('-> valeur TRES aberrante!')
                     actions[act][p][f][code]['ressources']=ress_act
+                    #print(act,"***")
+                    #printjs(actions[act])
 
                     
     if not KEYWORD_FILTER:
@@ -1161,6 +1164,7 @@ ress_actions()
 filtered_actions={}
 
 def classif_actions_by_mean():#chaque action a comme classif la moyenne des classifs de ses tiers, on ajoute toutes les classifs d'actions pour avoir l'histogramme final, on fait aussi l'histogramme par secteur
+    filtered_csv='action;période;firme;montant estimé;tiers;poids dans exercice;cibles;secteurs;classif\n'
     croise_secteur_classif={k:{c:0 for c in POSSIBLE_LABELS} for k in DOMAINE}
     croise_cibles_classif={c:{cl:0 for cl in POSSIBLE_LABELS} for c in CIBLES}
     actions_by_secteur={k:0 for k in DOMAINE}
@@ -1201,8 +1205,7 @@ def classif_actions_by_mean():#chaque action a comme classif la moyenne des clas
                         #         printjs(mean_classif_wgt)
                         #         input('?')
                     cibles_action={c:ress_act/(len(action['cibles'])*100) for c in action['cibles']}
-
-
+                    filtered_csv+=('\n'+';'.join([objet,p,f,str(round(ress_act,1))+'€',str(action['tiers']),str(action['poids_abs']),str(action['cibles']),str(action['domaines']),';'.join([k+':'+str(round(100*mean_classif_wgt[k]/ress_act,0)) for k in mean_classif_wgt.keys()])]))
                     actions_by_classe=add_values(actions_by_classe,mean_classif_wgt)
                     actions_by_secteur=add_values(actions_by_secteur,secteurs_action)
                     actions_by_cible=add_values(actions_by_cible,cibles_action)
@@ -1226,6 +1229,8 @@ def classif_actions_by_mean():#chaque action a comme classif la moyenne des clas
         # if round(ttl_ress_classes)!=round(ttl_ress_sect) or round(ttl_ress_sect)!=round(ttl_ress_croise) or round(ttl_ress_croise)!=round(ttl_ress_so_far):#check
         #     input('?')
 
+    with open('filtered_csv.csv', 'w', encoding='utf-8') as f:
+        f.write(filtered_csv)
     if IMPUTER_DOMAINE:
         del croise_secteur_classif['Non renseigné']
         del actions_by_secteur['Non renseigné']
